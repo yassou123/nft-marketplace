@@ -2,7 +2,7 @@
 
 A simple decentralized marketplace where users **mint** NFTs (ERC-721), **list** them for sale, **buy** them with ETH, **cancel** or **reprice** their listings and **withdraw** their earnings. An **admin** (contract owner) sets a marketplace fee (max 10%).
 
-> Mini-project, Blockchain module. Team: `<Student 1>` & `<Student 2>`.
+> Mini-project, Blockchain module. Team: Yasmine Chaouachi & Zina Jellabi.
 
 ---
 
