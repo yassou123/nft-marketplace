@@ -1,31 +1,31 @@
-# Mini-project proposal — 3 ideas
+# Proposition de mini-projet — 3 idées
 
-Team: Yasmine Chaouachi & Zina Jellabi — **Chosen project: Idea 1 (NFT Marketplace)**
-
----
-
-## Idea 1 — NFT Marketplace ✅ (chosen)
-
-**Description:** A decentralized platform where users create (mint) digital artworks as NFTs, list them for sale in ETH and buy them from other users. The smart contract guarantees an atomic NFT ↔ ETH exchange without a trusted intermediary; the platform takes a transparent fee capped in the code.
-
-**Smart contracts:**
-- `MyNFT.sol` — ERC-721 collection: `mint(tokenURI)`, ownership, metadata.
-- `NFTMarketplace.sol` — `listItem`, `buyItem`, `cancelListing`, `updatePrice`, `withdrawProceeds`, `setFee` (admin). Security: `ReentrancyGuard`, `Ownable`, pull payments, escrow.
+Binôme : Yasmine Chaouachi & Zina Jellabi — **Projet retenu : Idée 1 (Marketplace de NFT)**
 
 ---
 
-## Idea 2 — Decentralized Voting (DAO-style)
+## Idée 1 — Marketplace de NFT ✅ (retenue)
 
-**Description:** An organisation (class, association) registers eligible voters; the admin opens a proposal with options and a deadline; each registered address votes once; results are public and cannot be modified.
+**Description :** Une plateforme décentralisée où les utilisateurs créent (mint) des œuvres numériques sous forme de NFT, les mettent en vente en ETH et achètent celles des autres utilisateurs. Le smart contract garantit un échange atomique NFT ↔ ETH sans intermédiaire de confiance ; la plateforme prélève une commission transparente, plafonnée dans le code.
 
-**Smart contracts:**
-- `Voting.sol` — `registerVoter`, `createProposal`, `vote`, `closeProposal`, `getResults`. Rules: one vote per address, voting only during the period, admin-only registration.
+**Smart contracts :**
+- `MyNFT.sol` — collection ERC-721 : `mint(tokenURI)`, propriété, métadonnées.
+- `NFTMarketplace.sol` — `listItem`, `buyItem`, `cancelListing`, `updatePrice`, `withdrawProceeds`, `setFee` (admin). Sécurité : `ReentrancyGuard`, `Ownable`, paiements en mode « pull » (le vendeur retire lui-même ses gains), séquestre (escrow) du NFT pendant la vente.
 
 ---
 
-## Idea 3 — Crowdfunding with refund guarantee
+## Idée 2 — Vote décentralisé (type DAO)
 
-**Description:** A project owner creates a campaign with a goal and deadline. Contributors send ETH. If the goal is reached, the owner withdraws the funds; otherwise every contributor gets a refund automatically guaranteed by the contract.
+**Description :** Une organisation (classe, association) enregistre les votants autorisés ; l'administrateur ouvre une proposition avec des options et une date limite ; chaque adresse enregistrée vote une seule fois ; les résultats sont publics et non modifiables.
 
-**Smart contracts:**
-- `Crowdfunding.sol` — `createCampaign`, `contribute`, `withdrawFunds` (owner, if goal reached), `refund` (contributors, if goal missed). Security: pull-based refunds, deadline checks, reentrancy guard.
+**Smart contracts :**
+- `Voting.sol` — `registerVoter`, `createProposal`, `vote`, `closeProposal`, `getResults`. Règles : un seul vote par adresse, vote uniquement pendant la période ouverte, enregistrement des votants réservé à l'administrateur.
+
+---
+
+## Idée 3 — Financement participatif avec remboursement garanti
+
+**Description :** Un porteur de projet crée une campagne avec un objectif et une date limite. Les contributeurs envoient des ETH. Si l'objectif est atteint, le porteur retire les fonds ; sinon, chaque contributeur peut se faire rembourser, ce que le contrat garantit.
+
+**Smart contracts :**
+- `Crowdfunding.sol` — `createCampaign`, `contribute`, `withdrawFunds` (porteur, si l'objectif est atteint), `refund` (contributeurs, si l'objectif n'est pas atteint). Sécurité : remboursements en mode « pull », contrôle des dates limites, protection contre la réentrance.
