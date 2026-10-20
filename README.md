@@ -1,92 +1,92 @@
-# NFT Marketplace
+# Marketplace de NFT
 
-A simple decentralized marketplace where users **mint** NFTs (ERC-721), **list** them for sale, **buy** them with ETH, **cancel** or **reprice** their listings and **withdraw** their earnings. An **admin** (contract owner) sets a marketplace fee (max 10%).
+Une marketplace décentralisée simple où les utilisateurs **créent (mint)** des NFT (ERC-721), les **mettent en vente**, les **achètent** en ETH, **annulent** ou **modifient le prix** de leurs annonces et **retirent** leurs gains. Un **administrateur** (propriétaire du contrat) fixe la commission de la plateforme (10 % maximum).
 
-> Mini-project, Blockchain module. Team: Yasmine Chaouachi & Zina Jellabi.
+> Mini-projet, module Blockchain. Binôme : Yasmine Chaouachi & Zina Jellabi.
 
 ---
 
-## 1. Why a blockchain?
+## 1. Pourquoi une blockchain ?
 
-| Problem in a centralized marketplace | What the blockchain brings |
+| Problème d'une marketplace centralisée | Apport de la blockchain |
 |---|---|
-| The platform can freeze, censor or fake ownership | Ownership is public and verifiable (`ownerOf`) |
-| Buyer must trust the platform to deliver | The smart contract swaps NFT ↔ ETH **atomically** (both or nothing) |
-| Opaque fees | Fee is public in the contract (`feeBps`) and capped at 10% in code |
-| Payment held by a company | Seller withdraws their ETH directly (`withdrawProceeds`) |
+| La plateforme peut bloquer, censurer ou falsifier la propriété | La propriété est publique et vérifiable (`ownerOf`) |
+| L'acheteur doit faire confiance à la plateforme pour la livraison | Le smart contract échange NFT ↔ ETH de façon **atomique** (tout ou rien) |
+| Commissions opaques | La commission est publique dans le contrat (`feeBps`) et plafonnée à 10 % dans le code |
+| Paiement retenu par une entreprise | Le vendeur retire lui-même ses ETH (`withdrawProceeds`) |
 
-**Platform:** Ethereum (EVM) — the reference for NFTs (ERC-721 standard), mature tooling (Solidity, OpenZeppelin, MetaMask). Local **Ganache** blockchain for development: free, instant, 10 pre-funded accounts.
+**Plateforme :** Ethereum (EVM), la référence pour les NFT (standard ERC-721), avec des outils matures (Solidity, OpenZeppelin, MetaMask). Blockchain locale **Ganache** pour le développement : gratuite, instantanée, 10 comptes pré-approvisionnés.
 
 ---
 
 ## 2. Architecture
 
 ```
- React + Vite (frontend)  ──ethers.js──►  MetaMask (signs tx)  ──►  Ganache (local Ethereum)
-                                                                       │
-                                                         ┌─────────────┴──────────────┐
-                                                         │  MyNFT.sol (ERC-721)       │
-                                                         │  NFTMarketplace.sol        │
-                                                         └────────────────────────────┘
+ React + Vite (frontend)  ──ethers.js──►  MetaMask (signe les tx)  ──►  Ganache (Ethereum local)
+                                                                            │
+                                                              ┌─────────────┴──────────────┐
+                                                              │  MyNFT.sol (ERC-721)       │
+                                                              │  NFTMarketplace.sol        │
+                                                              └────────────────────────────┘
 ```
 
 ### Smart contracts
 
-| Contract | Role | Main functions |
+| Contrat | Rôle | Fonctions principales |
 |---|---|---|
-| `MyNFT.sol` | ERC-721 collection (OpenZeppelin `ERC721URIStorage`) | `mint(uri)`, `totalMinted()`, + standard ERC-721 (`ownerOf`, `approve`, `tokenURI`…) |
-| `NFTMarketplace.sol` | Sales logic (escrow + pull payments) | `listItem`, `buyItem`, `cancelListing`, `updatePrice`, `withdrawProceeds`, `setFee` (admin), `getActiveListings` |
-| `test/ReentrancyAttacker.sol` | **Test only** — malicious contract used to prove the reentrancy protection | `attack()` |
+| `MyNFT.sol` | Collection ERC-721 (OpenZeppelin `ERC721URIStorage`) | `mint(uri)`, `totalMinted()`, + fonctions standard ERC-721 (`ownerOf`, `approve`, `tokenURI`…) |
+| `NFTMarketplace.sol` | Logique de vente (séquestre + paiements « pull ») | `listItem`, `buyItem`, `cancelListing`, `updatePrice`, `withdrawProceeds`, `setFee` (admin), `getActiveListings` |
+| `test/ReentrancyAttacker.sol` | **Tests uniquement** : contrat malveillant qui prouve la protection contre la réentrance | `attack()` |
 
-### Sale flow
+### Déroulement d'une vente
 
-1. Seller `mint` → owns token #N.
-2. Seller `approve(marketplace, N)` then `listItem(nft, N, price)` → NFT moves into the marketplace (escrow).
-3. Buyer `buyItem(listingId)` sending exactly `price` ETH → NFT goes to buyer; `price − fee` credited to seller, `fee` credited to admin.
-4. Seller `withdrawProceeds()` → receives ETH.
+1. Le vendeur appelle `mint` → il possède le token n° N.
+2. Le vendeur appelle `approve(marketplace, N)` puis `listItem(nft, N, prix)` → le NFT est transféré à la marketplace (séquestre).
+3. L'acheteur appelle `buyItem(listingId)` en envoyant exactement `prix` ETH → le NFT va à l'acheteur ; `prix − commission` est crédité au vendeur, la `commission` à l'admin.
+4. Le vendeur appelle `withdrawProceeds()` → il reçoit ses ETH.
 
-### Design choices
+### Choix de conception
 
-- **Escrow**: the NFT is held by the contract while listed → a seller cannot sell or transfer it elsewhere at the same time (no "ghost" listing).
-- **Pull payments**: ETH is not pushed to the seller during `buyItem`; it is stored in `proceeds` and withdrawn later. A seller that cannot receive ETH can't block purchases.
-- **Metadata**: stored as a `data:` URI (JSON with name / description / image URL) to avoid needing IPFS for the demo. `ipfs://` and `https://` URIs also work.
+- **Séquestre (escrow)** : le NFT est détenu par le contrat pendant la mise en vente. Le vendeur ne peut donc pas le vendre ou le transférer ailleurs en même temps, ce qui évite les annonces « fantômes ».
+- **Paiements « pull »** : les ETH ne sont pas envoyés au vendeur pendant `buyItem`. Ils sont stockés dans `proceeds` et retirés plus tard. Un vendeur incapable de recevoir des ETH ne peut pas bloquer les achats.
+- **Métadonnées** : stockées sous forme d'URI `data:` (JSON avec nom, description et URL de l'image), pour éviter d'avoir besoin d'IPFS pendant la démo. Les URI `ipfs://` et `https://` fonctionnent aussi.
 
 ---
 
-## 3. Security
+## 3. Sécurité
 
-| Risk | Protection in the code | Proven by test |
+| Risque | Protection dans le code | Prouvé par le test |
 |---|---|---|
-| Reentrancy (withdraw twice) | `nonReentrant` (OpenZeppelin) + balance set to 0 **before** sending ETH (Checks-Effects-Interactions) | `Security: reentrancy attack` |
-| Double sale of the same NFT | `active = false` before transfer + `onlyActive` modifier | `prevents buying the same listing twice` |
-| Paying a wrong amount | `require(msg.value == price)` | `reverts with wrong ETH amount` |
-| Someone else cancels / reprices | `onlySeller` modifier | `non-seller cannot cancel or update` |
-| Listing an NFT you don't own | `ownerOf == msg.sender` check | `reverts if caller is not the owner` |
-| Non-admin changes the fee | `onlyOwner` (OpenZeppelin `Ownable`) | `non-owner cannot set fee` |
-| Admin sets abusive fee | Hard cap `MAX_FEE_BPS = 1000` (10%) | `owner can set fee up to 10%` |
-| Integer overflow | Solidity ≥ 0.8 reverts automatically | — |
+| Réentrance (retirer deux fois) | `nonReentrant` (OpenZeppelin) + solde remis à 0 **avant** l'envoi des ETH (Checks-Effects-Interactions) | `Security: reentrancy attack` |
+| Double vente du même NFT | `active = false` avant le transfert + modificateur `onlyActive` | `prevents buying the same listing twice` |
+| Mauvais montant payé | `require(msg.value == price)` | `reverts with wrong ETH amount` |
+| Un autre compte annule ou modifie le prix | Modificateur `onlySeller` | `non-seller cannot cancel or update` |
+| Mettre en vente un NFT qu'on ne possède pas | Vérification `ownerOf == msg.sender` | `reverts if caller is not the owner` |
+| Un non-admin modifie la commission | `onlyOwner` (OpenZeppelin `Ownable`) | `non-owner cannot set fee` |
+| L'admin fixe une commission abusive | Plafond `MAX_FEE_BPS = 1000` (10 %) | `owner can set fee up to 10%` |
+| Dépassement d'entier (overflow) | Solidity ≥ 0.8 annule automatiquement la transaction | — |
 
-**Known limits** (to discuss in the oral): `getActiveListings` and the frontend's `ownerOf` loop are O(n) — fine for a demo, an indexer (The Graph) or events would be needed at scale; no royalties (ERC-2981); no auctions; image URLs are not stored on-chain (only their link).
+**Limites connues** (à aborder à l'oral) : `getActiveListings` et la boucle `ownerOf` du frontend sont en O(n), ce qui suffit pour une démo ; à grande échelle, il faudrait un indexeur (The Graph) ou exploiter les événements. Pas de royalties (ERC-2981), pas d'enchères, et les images ne sont pas stockées sur la blockchain (seul leur lien l'est).
 
 ---
 
-## 4. Tools
+## 4. Outils
 
-| Tool | Usage in this project |
+| Outil | Utilisation dans le projet |
 |---|---|
 | Solidity 0.8.24 | Smart contracts |
-| OpenZeppelin 5.1 | Audited ERC-721, `Ownable`, `ReentrancyGuard` |
-| Remix IDE | Write / compile / deploy manually to Ganache |
-| Hardhat | Automated tests (18 tests) + deploy script |
-| Ganache | Local Ethereum blockchain (chainId 1337) |
-| MetaMask | Wallet: switch admin / seller / buyer accounts, sign tx |
-| React + Vite | Frontend (dashboard, mint form, marketplace, admin panel) |
-| Ethers.js v6 | Frontend ↔ contracts |
-| Git / GitHub | Version control, collaboration in pairs |
+| OpenZeppelin 5.1 | ERC-721, `Ownable`, `ReentrancyGuard` audités |
+| Remix IDE | Écrire, compiler et déployer manuellement sur Ganache |
+| Hardhat | Tests automatisés (18 tests) + script de déploiement |
+| Ganache | Blockchain Ethereum locale (chainId 1337) |
+| MetaMask | Portefeuille : passer d'un compte à l'autre (admin / vendeur / acheteur), signer les transactions |
+| React + Vite | Frontend (tableau de bord, formulaire de création, marketplace, panneau admin) |
+| Ethers.js v6 | Communication frontend ↔ contrats |
+| Git / GitHub | Gestion de versions, travail en binôme |
 
 ---
 
-## 5. Project structure
+## 5. Structure du projet
 
 ```
 nft-marketplace/
@@ -94,119 +94,149 @@ nft-marketplace/
 │   ├── MyNFT.sol
 │   ├── NFTMarketplace.sol
 │   └── test/ReentrancyAttacker.sol
-├── test/NFTMarketplace.test.js      # 18 Hardhat tests
-├── scripts/deploy.js                # deploys + writes frontend config
+├── test/NFTMarketplace.test.js      # 18 tests Hardhat
+├── scripts/deploy.js                # déploie + écrit la config du frontend
 ├── hardhat.config.js
 ├── frontend/
 │   └── src/
-│       ├── App.jsx                  # state + wallet + refresh
-│       ├── web3.js                  # ethers helpers
-│       ├── contracts/deployments.json  # addresses + ABIs
+│       ├── App.jsx                  # état + portefeuille + rafraîchissement
+│       ├── web3.js                  # fonctions utilitaires ethers
+│       ├── contracts/deployments.json  # adresses + ABI
 │       └── components/  MintForm, MyNFTs, Marketplace, AdminPanel, NFTCard
 └── docs/
-    ├── PROJECT_PROPOSAL.md          # the 3 ideas requested by the teacher
-    ├── AI_USAGE.md                  # generative AI log (grading criterion)
-    └── QA_PREP.md                   # oral defense preparation
+    ├── PROJECT_PROPOSAL.md          # les 3 idées demandées par le professeur
+    ├── AI_USAGE.md                  # journal d'utilisation de l'IA (critère noté)
+    ├── QA_PREP.md                   # préparation de la soutenance
+    └── *.png                        # captures d'écran de la démo
 ```
 
 ---
 
-## 6. Step-by-step setup
+## 6. Installation pas à pas
 
-### Prerequisites
+### Prérequis
 
-- [Node.js](https://nodejs.org) 18+ and Git
-- [Ganache](https://archive.trufflesuite.com/ganache/) (GUI) — or CLI: `npm i -g ganache`
-- [MetaMask](https://metamask.io) browser extension
+- [Node.js](https://nodejs.org) 18+ avec **npm 10** (vérifier avec `node -v` et `npm -v` ; mettre npm à jour avec `npm install -g npm@10` si besoin)
+- Git
+- Ganache CLI : `npm install -g ganache`
+- Extension navigateur [MetaMask](https://metamask.io)
 
-### Step 1 — Clone and install
+### Étape 1 — Cloner et installer
 
 ```bash
-git clone https://github.com/<your-account>/nft-marketplace.git
+git clone https://github.com/yassou123/nft-marketplace.git
 cd nft-marketplace
 npm install
 cd frontend && npm install && cd ..
 ```
 
-### Step 2 — Run the tests
+> ⚠ Lancez toutes les commandes depuis le dossier qui contient `hardhat.config.js`. Si `npx hardhat` propose d'installer `hardhat@3`, vous n'êtes pas dans le bon dossier → répondez **n**.
+
+### Étape 2 — Lancer les tests
 
 ```bash
-npx hardhat test        # runs on Hardhat's in-memory network
-npx hardhat coverage    # optional: coverage report
+npx hardhat test        # s'exécute sur le réseau interne de Hardhat
+npx hardhat coverage    # optionnel : rapport de couverture
 ```
 
-Expected: `18 passing`.
+Résultat attendu : `18 passing`.
 
-### Step 3 — Start Ganache
+### Étape 3 — Démarrer Ganache
 
-- **GUI**: *Quickstart Ethereum* → RPC `http://127.0.0.1:7545`, chain ID **1337**.
-- **CLI**: `ganache --port 7545 --chain.chainId 1337`
+Dans un **terminal séparé** (à laisser ouvert), depuis un dossier autre que `C:\Windows\system32` :
 
-### Step 4 — Configure MetaMask
+```bash
+mkdir ganache-db
+ganache --port 7545 --chain.chainId 1337 --wallet.deterministic --db ./ganache-db
+```
 
-1. MetaMask → *Add network manually*: name `Ganache`, RPC `http://127.0.0.1:7545`, chain ID `1337`, symbol `ETH`.
-2. Import 3 accounts (Ganache → key icon → copy private key → MetaMask *Import account*):
-   - **Account 1 = admin** (Ganache account #0, the deployer)
-   - **Account 2 = seller**
-   - **Account 3 = buyer**
+- `--wallet.deterministic` : les mêmes 10 comptes à chaque lancement.
+- `--db` : la blockchain est sauvegardée, les contrats sont conservés après un redémarrage.
+- L'avertissement `µWS is not compatible` avec Node 22 n'est pas bloquant (Ganache bascule sur une implémentation Node.js).
 
-### Step 5 — Deploy the contracts
+Résultat attendu : `RPC Listening on 127.0.0.1:7545`.
 
-**Option A — Hardhat (recommended, automatic config):**
+### Étape 4 — Déployer les contrats
+
+**Option A — Hardhat (recommandée, configuration automatique) :**
 
 ```bash
 npm run deploy:ganache
 ```
 
-Addresses and ABIs are written to `frontend/src/contracts/deployments.json`.
+Les adresses et les ABI sont écrites dans `frontend/src/contracts/deployments.json`.
 
-**Option B — Remix + MetaMask (manual):**
+**Option B — Remix + MetaMask (manuelle) :**
 
-1. Open [remix.ethereum.org](https://remix.ethereum.org), create `MyNFT.sol` and `NFTMarketplace.sol` (paste the code; OpenZeppelin imports resolve automatically).
-2. *Solidity Compiler* → version `0.8.24` → **Advanced configurations → EVM version: `paris`** (⚠ Ganache does not support the newer opcodes of the default EVM version) → Compile.
-3. *Deploy & Run* → Environment **Injected Provider – MetaMask** (MetaMask on Ganache, Account 1 = admin).
-4. Deploy `MyNFT`, then `NFTMarketplace`.
-5. Copy both addresses into `frontend/src/contracts/deployments.json` (`"address": "0x..."`). The ABIs are already in the file.
+1. Ouvrir [remix.ethereum.org](https://remix.ethereum.org), créer `MyNFT.sol` et `NFTMarketplace.sol` (coller le code ; les imports OpenZeppelin sont résolus automatiquement).
+2. *Solidity Compiler* → version `0.8.24` → **Advanced configurations → EVM version : `paris`** (⚠ Ganache ne supporte pas les instructions récentes de la version EVM par défaut) → Compile.
+3. *Deploy & Run* → Environment **Injected Provider – MetaMask** (MetaMask sur Ganache, compte Admin).
+4. Déployer `MyNFT`, puis `NFTMarketplace`.
+5. Copier les deux adresses dans `frontend/src/contracts/deployments.json` (`"address": "0x..."`). Les ABI sont déjà dans le fichier.
 
-> ⚠ Restarting Ganache (CLI without `--db`) resets the chain → redeploy. In MetaMask, if a tx is stuck after a reset: *Settings → Advanced → Clear activity tab data*.
+### Étape 5 — Configurer MetaMask
 
-### Step 6 — Start the frontend
+1. **Importer le portefeuille Ganache** : *Importer un portefeuille existant* → coller la phrase de 12 mots affichée par Ganache (section `HD Wallet`).
+   > ⚠ Cette phrase est publique (tests uniquement). N'y mettez jamais de vrais fonds. MetaMask peut découvrir automatiquement de nombreux comptes liés à cette phrase : c'est normal.
+2. **Ajouter le réseau** : ☰ → *Réseaux* → *Ajouter un réseau personnalisé* : nom `Ganache`, RPC `http://127.0.0.1:7545`, ID de chaîne `1337`, symbole `ETH`. Puis sélectionner **Ganache** dans le filtre des réseaux.
+3. **Trouver et renommer les 3 comptes** (recherche par adresse dans la liste des comptes) :
+
+| Rôle | Index Ganache | Adresse |
+|---|---|---|
+| **Admin** (déployeur) | (0) | `0x90F8bf6A…8c9C1` |
+| **Vendeur** | (1) | `0xFFcf8FDE…409f0` |
+| **Acheteur** | (2) | `0x22d491Bd…1e32b` |
+
+4. Lors d'un changement de compte, si MetaMask affiche *« localhost:5173 — Non connecté »*, cliquer sur **Connecter**, puis recharger la page.
+
+### Étape 6 — Démarrer le frontend
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Open http://localhost:5173 → **Connect MetaMask**.
+Ouvrir http://localhost:5173 → **Connect MetaMask**.
 
-### Step 7 — Demo scenario (for the presentation)
+### Étape 7 — Scénario de démonstration (pour la soutenance)
 
-1. **Seller** account: create an NFT (name + image URL) → *Mint*.
-2. Enter a price (e.g. `1`) → *List for sale* → confirm **2** MetaMask tx (approve + list).
-3. Switch MetaMask to **Buyer** → the NFT appears in *Marketplace* → *Buy*.
-4. Buyer now sees it in *My NFTs*.
-5. Switch back to **Seller** → *Your proceeds: 0.975 ETH* → *Withdraw* (check balance in Ganache).
-6. Switch to **Admin** → admin panel → proceeds = 0.025 ETH fee; change fee to `5` %.
-7. Show a failing case: seller tries to buy own NFT → error message.
+1. Compte **Vendeur** : créer un NFT (nom + URL d'image, par exemple `https://picsum.photos/id/237/300`) → *Mint*.
+2. Saisir un prix (par exemple `1`) → *List for sale* → confirmer **2** transactions MetaMask (approve + list).
+3. Passer MetaMask sur **Acheteur** → le NFT apparaît dans *Marketplace* → *Buy*.
+4. L'acheteur le voit maintenant dans *My NFTs*.
+5. Revenir sur **Vendeur** → *Your proceeds: 0.975 ETH* → *Withdraw*.
+6. Passer sur **Admin** → panneau admin → gains = 0,025 ETH de commission ; changer la commission à `5` %.
+7. Montrer un cas d'échec : le vendeur essaie d'acheter son propre NFT → message d'erreur.
 
----
-
-## 7. GitHub workflow (pair work)
-
-```bash
-git init && git add . && git commit -m "Initial commit: contracts, tests, frontend"
-git branch -M main
-git remote add origin https://github.com/<your-account>/nft-marketplace.git
-git push -u origin main
-```
-
-- Add your partner: GitHub repo → *Settings → Collaborators*.
-- Suggested split: **Student 1** = smart contracts + tests, **Student 2** = frontend + docs.
-- One branch per feature (`feature/contracts`, `feature/frontend`) → Pull Request → review by the partner → merge.
-- Commit regularly with clear messages (the teacher can see the history).
+> Toujours vérifier **« Signer avec »** et **« Réseau : Ganache »** dans la fenêtre MetaMask avant de confirmer.
 
 ---
 
-## 8. Possible improvements
+## Captures d'écran de la démo
 
-Royalties (ERC-2981), auctions, IPFS upload (Pinata), events-based indexing (The Graph), deployment on Sepolia testnet, collection filters / search.
+| Tests | Déploiement |
+|---|---|
+| ![Tests](docs/01-tests.png) | ![Déploiement](docs/02-deploy.png) |
+
+| Création (mint) | Mise en vente |
+|---|---|
+| ![Mint](docs/03-mint.png) | ![Mise en vente](docs/04-listed.png) |
+
+| Achat | Gains du vendeur |
+|---|---|
+| ![Achat](docs/05-buy.png) | ![Gains](docs/06-proceeds.png) |
+
+---
+
+## 7. Organisation GitHub (travail en binôme)
+
+- Dépôt : https://github.com/yassou123/nft-marketplace
+- Répartition : **Yasmine Chaouachi** = smart contracts + tests, **Zina Jellabi** = frontend + documentation.
+- Une branche par fonctionnalité (`feature/contracts`, `feature/frontend`) → Pull Request → relecture par l'autre membre du binôme → fusion.
+- Commits réguliers avec des messages clairs.
+
+---
+
+## 8. Améliorations possibles
+
+Royalties (ERC-2981), enchères, envoi des images sur IPFS (Pinata), indexation par les événements (The Graph), déploiement sur le testnet Sepolia, filtres et recherche dans la collection.
