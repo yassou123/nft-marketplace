@@ -1,6 +1,6 @@
 # Mini-project proposal — 3 ideas
 
-Team: `<Student 1>` & `<Student 2>` — **Chosen project: Idea 1 (NFT Marketplace)**
+Team: Yasmine Chaouachi & Zina Jellabi — **Chosen project: Idea 1 (NFT Marketplace)**
 
 ---
 
