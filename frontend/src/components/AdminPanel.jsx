@@ -1,0 +1,20 @@
+import { useState } from "react";
+
+/** Visible only to the contract owner (deployer account) */
+export default function AdminPanel({ feeBps, contracts, runTx }) {
+  const [fee, setFee] = useState("");
+
+  const save = () => {
+    const bps = Math.round(Number(fee) * 100); // 2.5 % -> 250 bps
+    runTx("Set fee", () => contracts.market.setFee(bps));
+  };
+
+  return (
+    <section className="admin">
+      <h2>Admin panel</h2>
+      <p>Current marketplace fee: <b>{Number(feeBps) / 100}%</b> (max 10%). Fees are added to the admin proceeds.</p>
+      <input type="number" step="0.1" min="0" max="10" placeholder="New fee in %" value={fee} onChange={(e) => setFee(e.target.value)} />
+      <button onClick={save} disabled={fee === ""}>Update fee</button>
+    </section>
+  );
+}

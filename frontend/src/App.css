@@ -1,0 +1,22 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #0f1222; color: #e8e8f0; }
+.app { max-width: 1100px; margin: 0 auto; padding: 16px; }
+header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+h1 { font-size: 1.6rem; }
+section { background: #1a1e36; border-radius: 12px; padding: 16px; margin: 16px 0; }
+button { background: #6c5ce7; color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; margin: 4px 4px 0 0; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+button.secondary { background: #444a6d; }
+input { padding: 8px; border-radius: 8px; border: 1px solid #444a6d; background: #0f1222; color: #fff; width: 100%; margin-top: 6px; }
+.form { display: grid; gap: 6px; max-width: 480px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.card { background: #23284a; border-radius: 10px; padding: 10px; }
+.card img, .noimg { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; background: #333; display: grid; place-items: center; }
+.card h3 { margin: 8px 0 4px; font-size: 1rem; }
+.card p { margin: 4px 0; font-size: .85rem; color: #b8bbd6; word-break: break-word; }
+.price { font-weight: bold; color: #55efc4 !important; font-size: 1rem !important; }
+.balance { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.status { background: #2d3360; padding: 8px 12px; border-radius: 8px; }
+.warning { background: #6b3a00; padding: 8px 12px; border-radius: 8px; }
+.account { background: #23284a; padding: 6px 12px; border-radius: 20px; }
+.admin { border: 1px solid #fdcb6e; }
