@@ -3,9 +3,18 @@ import { formatEther, parseEther } from "ethers";
 import NFTCard from "./NFTCard.jsx";
 
 /** All active listings: buy, or cancel / update price for your own */
-export default function Marketplace({ listings, account, contracts, runTx }) {
+export default function Marketplace({ listings, account, contracts, runTx, notify }) {
   const [newPrices, setNewPrices] = useState({});
   const { market } = contracts;
+
+  const updatePrice = (l, id) => {
+    const value = newPrices[id];
+    if (!value || !(Number(value) > 0)) {
+      notify(`Listing #${id}: enter a new price greater than 0 ETH.`);
+      return;
+    }
+    runTx("Update price", () => market.updatePrice(l.listingId, parseEther(value)));
+  };
 
   return (
     <section>
@@ -23,8 +32,7 @@ export default function Marketplace({ listings, account, contracts, runTx }) {
                   <input type="number" step="0.01" min="0" placeholder="New price (ETH)"
                     value={newPrices[id] || ""}
                     onChange={(e) => setNewPrices({ ...newPrices, [id]: e.target.value })} />
-                  <button onClick={() => newPrices[id] &&
-                    runTx("Update price", () => market.updatePrice(l.listingId, parseEther(newPrices[id])))}>
+                  <button onClick={() => updatePrice(l, id)}>
                     Update price
                   </button>
                   <button className="secondary" onClick={() => runTx("Cancel", () => market.cancelListing(l.listingId))}>

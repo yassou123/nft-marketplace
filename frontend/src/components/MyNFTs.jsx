@@ -3,12 +3,15 @@ import { parseEther } from "ethers";
 import NFTCard from "./NFTCard.jsx";
 
 /** NFTs owned by the user, with a "list for sale" action (approve + list) */
-export default function MyNFTs({ nfts, contracts, runTx }) {
+export default function MyNFTs({ nfts, contracts, runTx, notify }) {
   const [prices, setPrices] = useState({});
 
   const list = async (tokenId) => {
     const price = prices[tokenId];
-    if (!price || Number(price) <= 0) return;
+    if (!price || !(Number(price) > 0)) {
+      notify(`NFT #${tokenId}: enter a price greater than 0 ETH.`);
+      return;
+    }
     const { nft, market } = contracts;
     // Step 1: allow the marketplace to move this NFT
     const approved = await runTx("Approve", () => nft.approve(market.target, tokenId));

@@ -20,3 +20,4 @@ input { padding: 8px; border-radius: 8px; border: 1px solid #444a6d; background:
 .warning { background: #6b3a00; padding: 8px 12px; border-radius: 8px; }
 .account { background: #23284a; padding: 6px 12px; border-radius: 20px; }
 .admin { border: 1px solid #fdcb6e; }
+.status.error { background: #6b1d2a; border: 1px solid #e17055; }

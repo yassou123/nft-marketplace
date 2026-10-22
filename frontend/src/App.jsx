@@ -69,6 +69,12 @@ export default function App() {
     };
   }, []);
 
+  /** Show a validation error (red message) without sending any transaction */
+  const notify = (msg) => {
+    setStatus(`⚠ ${msg}`);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // make sure the message is visible
+  };
+
   /** Wrapper for every transaction: status message + wait + refresh */
   const runTx = async (label, fn) => {
     try {
@@ -80,7 +86,7 @@ export default function App() {
       await refresh();
       return true;
     } catch (e) {
-      setStatus(`${label} failed: ${readableError(e)}`);
+      notify(`${label} failed: ${readableError(e)}`);
       return false;
     }
   };
@@ -105,7 +111,7 @@ export default function App() {
       {wallet && wallet.chainId !== EXPECTED_CHAIN_ID && (
         <p className="warning">Wrong network (chainId {wallet.chainId}). <button onClick={switchToGanache}>Switch to Ganache</button></p>
       )}
-      {status && <p className="status">{status}</p>}
+      {status && <p className={status.startsWith("⚠") ? "status error" : "status"}>{status}</p>}
 
       {contracts && (
         <>
@@ -113,10 +119,10 @@ export default function App() {
             <span>Your proceeds: <b>{formatEther(proceeds)} ETH</b></span>
             <button disabled={proceeds === 0n} onClick={withdraw}>Withdraw</button>
           </section>
-          <MintForm contracts={contracts} runTx={runTx} />
-          <MyNFTs nfts={myNFTs} contracts={contracts} runTx={runTx} />
-          <Marketplace listings={listings} account={wallet.account} contracts={contracts} runTx={runTx} />
-          {isAdmin && <AdminPanel feeBps={feeBps} contracts={contracts} runTx={runTx} />}
+          <MintForm notify={notify} contracts={contracts} runTx={runTx} />
+          <MyNFTs notify={notify} nfts={myNFTs} contracts={contracts} runTx={runTx} />
+          <Marketplace notify={notify} listings={listings} account={wallet.account} contracts={contracts} runTx={runTx} />
+          {isAdmin && <AdminPanel notify={notify} feeBps={feeBps} contracts={contracts} runTx={runTx} />}
         </>
       )}
     </div>
