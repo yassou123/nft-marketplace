@@ -16,12 +16,12 @@ contract MyNFT is ERC721URIStorage {
     /// @param uri Metadata URI (JSON with name, description, image)
     /// @return tokenId The ID of the newly minted token
     function mint(string calldata uri) external returns (uint256 tokenId) {
-        require(bytes(uri).length > 0, "Empty URI");
-        tokenId = _nextTokenId++;
-        _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, uri);
-        emit NFTMinted(msg.sender, tokenId, uri);
-    }
+    require(bytes(uri).length > 0, "Empty URI");   // 1. règle : description obligatoire
+    tokenId = _nextTokenId++;                      // 2. prend le numéro suivant (1, 2, 3...)
+    _safeMint(msg.sender, tokenId);                // 3. crée le NFT et le donne à celui qui appelle
+    _setTokenURI(tokenId, uri);                    // 4. enregistre sa description (nom, image)
+    emit NFTMinted(msg.sender, tokenId, uri);      // 5. annonce publique
+}
 
     /// @notice Number of tokens minted so far (used by the frontend to iterate)
     function totalMinted() external view returns (uint256) {
