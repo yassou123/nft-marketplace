@@ -7,7 +7,6 @@
 | Outil | Usage |
 |---|---|
 | Claude (Anthropic) | Génération de la structure du projet, des smart contracts, des tests, du frontend et de la documentation ; assistance pas à pas pour l'installation et le déploiement |
-| `<autre outil éventuel>` | `<usage>` |
 
 ## 2. Méthode de vérification
 
