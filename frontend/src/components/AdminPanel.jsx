@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 /** Visible only to the contract owner (deployer account) */
-export default function AdminPanel({ feeBps, contracts, runTx, notify }) {
+export default function AdminPanel({ feeBps, contracts, runTx, notify, busy }) {
   const [fee, setFee] = useState("");
 
   const save = () => {
@@ -16,10 +16,10 @@ export default function AdminPanel({ feeBps, contracts, runTx, notify }) {
 
   return (
     <section className="admin">
-      <h2>Admin panel</h2>
+      <h2>👑 Admin panel</h2>
       <p>Current marketplace fee: <b>{Number(feeBps) / 100}%</b> (max 10%). Fees are added to the admin proceeds.</p>
       <input type="number" step="0.1" min="0" max="10" placeholder="New fee in %" value={fee} onChange={(e) => setFee(e.target.value)} />
-      <button onClick={save}>Update fee</button>
+      <button disabled={busy} onClick={save}>Update fee</button>
     </section>
   );
 }

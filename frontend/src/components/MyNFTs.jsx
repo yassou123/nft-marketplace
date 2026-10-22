@@ -3,7 +3,7 @@ import { parseEther } from "ethers";
 import NFTCard from "./NFTCard.jsx";
 
 /** NFTs owned by the user, with a "list for sale" action (approve + list) */
-export default function MyNFTs({ nfts, contracts, runTx, notify }) {
+export default function MyNFTs({ nfts, contracts, runTx, notify, busy }) {
   const [prices, setPrices] = useState({});
 
   const list = async (tokenId) => {
@@ -22,7 +22,7 @@ export default function MyNFTs({ nfts, contracts, runTx, notify }) {
 
   return (
     <section>
-      <h2>My NFTs ({nfts.length})</h2>
+      <h2>🎨 My NFTs ({nfts.length})</h2>
       <div className="grid">
         {nfts.map(({ tokenId, meta }) => (
           <NFTCard key={tokenId} meta={meta} tokenId={tokenId}>
@@ -31,10 +31,10 @@ export default function MyNFTs({ nfts, contracts, runTx, notify }) {
               value={prices[tokenId] || ""}
               onChange={(e) => setPrices({ ...prices, [tokenId]: e.target.value })}
             />
-            <button onClick={() => list(tokenId)}>List for sale</button>
+            <button disabled={busy} onClick={() => list(tokenId)}>List for sale</button>
           </NFTCard>
         ))}
-        {nfts.length === 0 && <p>You don't own any NFT yet.</p>}
+        {nfts.length === 0 && <p className="empty">You don't own any NFT yet. Create one above ✨</p>}
       </div>
     </section>
   );

@@ -18,6 +18,8 @@ export default function App() {
   const [owner, setOwner] = useState("");
   const [feeBps, setFeeBps] = useState(0n);
   const [status, setStatus] = useState("");
+  const [balance, setBalance] = useState(0n);     // ETH balance of the connected account
+  const [busy, setBusy] = useState(false);        // true while a transaction is in progress
 
   const connect = async () => {
     try {
@@ -53,6 +55,7 @@ export default function App() {
     setProceeds(await market.proceeds(wallet.account));
     setOwner(await market.owner());
     setFeeBps(await market.feeBps());
+    setBalance(await wallet.provider.getBalance(wallet.account));
   }, [contracts, wallet]);
 
   useEffect(() => { refresh(); }, [refresh]);
@@ -77,6 +80,7 @@ export default function App() {
 
   /** Wrapper for every transaction: status message + wait + refresh */
   const runTx = async (label, fn) => {
+    setBusy(true); // disable all buttons until the transaction is finished
     try {
       setStatus(`${label}: confirm in MetaMask...`);
       const tx = await fn();
@@ -88,6 +92,8 @@ export default function App() {
     } catch (e) {
       notify(`${label} failed: ${readableError(e)}`);
       return false;
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -97,11 +103,19 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>🖼️ NFT Marketplace</h1>
+        <div>
+          <h1>🖼️ <span className="title">NFT Marketplace</span></h1>
+          <p className="subtitle">Mint, sell and buy unique digital items on the blockchain</p>
+        </div>
         {wallet ? (
-          <span className="account">{wallet.account.slice(0, 6)}...{wallet.account.slice(-4)}{isAdmin && " (admin)"}</span>
+          <div className="account">
+            <span className={isAdmin ? "badge admin-badge" : "badge"}>{isAdmin ? "👑 Admin" : "👤 User"}</span>
+            <span className="address" title={wallet.account}>{wallet.account.slice(0, 6)}...{wallet.account.slice(-4)}</span>
+            <span className="eth">{Number(formatEther(balance)).toFixed(3)} ETH</span>
+            <span className="network">● Ganache</span>
+          </div>
         ) : (
-          <button onClick={connect}>Connect MetaMask</button>
+          <button onClick={connect}>🦊 Connect MetaMask</button>
         )}
       </header>
 
@@ -111,18 +125,22 @@ export default function App() {
       {wallet && wallet.chainId !== EXPECTED_CHAIN_ID && (
         <p className="warning">Wrong network (chainId {wallet.chainId}). <button onClick={switchToGanache}>Switch to Ganache</button></p>
       )}
-      {status && <p className={status.startsWith("⚠") ? "status error" : "status"}>{status}</p>}
+      {status && (
+        <p className={status.startsWith("⚠") ? "status error" : "status"}>
+          {busy && <span className="spinner" />}{status}
+        </p>
+      )}
 
       {contracts && (
         <>
           <section className="balance">
-            <span>Your proceeds: <b>{formatEther(proceeds)} ETH</b></span>
-            <button disabled={proceeds === 0n} onClick={withdraw}>Withdraw</button>
+            <span>💰 Your proceeds: <b>{formatEther(proceeds)} ETH</b></span>
+            <button disabled={busy || proceeds === 0n} onClick={withdraw}>Withdraw</button>
           </section>
-          <MintForm notify={notify} contracts={contracts} runTx={runTx} />
-          <MyNFTs notify={notify} nfts={myNFTs} contracts={contracts} runTx={runTx} />
-          <Marketplace notify={notify} listings={listings} account={wallet.account} contracts={contracts} runTx={runTx} />
-          {isAdmin && <AdminPanel notify={notify} feeBps={feeBps} contracts={contracts} runTx={runTx} />}
+          <MintForm busy={busy} notify={notify} contracts={contracts} runTx={runTx} />
+          <MyNFTs busy={busy} notify={notify} nfts={myNFTs} contracts={contracts} runTx={runTx} />
+          <Marketplace busy={busy} notify={notify} listings={listings} account={wallet.account} contracts={contracts} runTx={runTx} />
+          {isAdmin && <AdminPanel busy={busy} notify={notify} feeBps={feeBps} contracts={contracts} runTx={runTx} />}
         </>
       )}
     </div>
