@@ -47,7 +47,6 @@
 | Partage des supports de cours (smart contracts, DApps, consensus, token vs coin, NFT) : « le projet nécessite-t-il une amélioration ? » | Correspondance cours ↔ projet + questions de soutenance liées au cours | Accepté : pas de modification du code, ajout de questions dans `QA_PREP.md` |
 | « Aide-moi à comprendre le projet petit à petit avec des mots simples » | Leçons progressives (blockchain, ETH/gas, portefeuille, smart contract, NFT, fonctionnement de la marketplace) avec une question de contrôle à chaque étape | Utilisé pour préparer l'oral ; plusieurs réponses corrigées (ex. le NFT en vente appartient au contrat Marketplace, pas à l'acheteur) |
 | « Si je mets 0, la transaction ne se passe pas, je préfère que les messages d'erreur s'affichent » | Validation des formulaires + messages d'erreur | Accepté après test manuel de chaque cas d'erreur sur notre machine |
-| `<prompt du binôme>` | | |
 
 ## 5. Ce que nous avons appris / limites de l'IA
 
@@ -56,4 +55,4 @@
 - Les interfaces des outils (MetaMask) évoluent : les instructions doivent être adaptées à ce qu'on voit réellement à l'écran.
 - Il faut toujours lire une transaction avant de la signer (compte, réseau, contrat, montant).
 - L'IA ne voit pas tout : le défaut d'affichage des erreurs (n°12) a été trouvé **par nous, en testant**, pas par l'IA.
-- La validation côté site améliore l'expérience utilisateur, mais **la sécurité réelle est dans le smart contract** (`require`) : un utilisateur peut contourner le site, pas le contrat.
+- La validation côté site améliore l'expérience utilisateur, mais **la sécurité réelle est dans le smart contract** 
