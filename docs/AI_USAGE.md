@@ -13,7 +13,7 @@
 - Les contrats ont été **compilés** et **testés** avec Hardhat : `npx hardhat test` → **18 tests réussis** sur notre machine.
 - Les **cas d'erreur** ont été testés à la main (champs vides, prix à 0, mauvaise URL d'image) : c'est ainsi que nous avons trouvé le problème n°12.
 - Le **scénario complet** a été exécuté manuellement sur Ganache avec 3 comptes MetaMask (Admin, Vendeur, Acheteur) : mint → mise en vente → achat → retrait.
-- Les résultats ont été contrôlés à chaque étape : propriétaire du NFT, solde des comptes, montant reversé au vendeur (0,975 ETH = 1 ETH − 2,5 % de commission).
+- Les résultats ont été contrôlés à chaque étape : propriétaire du NFT, solde des comptes, montant reversé au vendeur (0,975 ETH = 1 ETH − 4 % de commission).
 - Chaque fonction des contrats a été relue et expliquée (voir `QA_PREP.md`).
 - Les mécanismes de sécurité (`ReentrancyGuard`, `Ownable`) ont été comparés avec la documentation officielle d'OpenZeppelin.
 
